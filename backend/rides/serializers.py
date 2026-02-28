@@ -52,10 +52,21 @@ class RideOfferSerializer(serializers.ModelSerializer):
         return float(profile.rating) if profile else 5.0
 
 
+class RideRequestBriefSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RideRequest
+        fields = ["id", "pickup_city", "pickup_state", "dropoff_city", "dropoff_state", "status"]
+
+
 class CompletedRideSerializer(serializers.ModelSerializer):
     driver = UserSerializer(read_only=True)
     rider = UserSerializer(read_only=True)
+    ride_request = RideRequestBriefSerializer(read_only=True)
+    is_completed = serializers.SerializerMethodField()
 
     class Meta:
         model = CompletedRide
         fields = "__all__"
+
+    def get_is_completed(self, obj):
+        return obj.dropoff_time is not None
