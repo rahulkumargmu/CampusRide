@@ -1,6 +1,3 @@
 {
-  "rewrites": [
-    { "source": "/backend/:path*", "destination": "https://campusride-production-2bba.up.railway.app/api/:path*" },
-    { "source": "/(.*)", "destination": "/index.html" }
-  ]
+  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
 }
