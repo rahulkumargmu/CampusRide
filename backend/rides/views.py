@@ -202,6 +202,16 @@ class AcceptOfferView(APIView):
             },
         )
 
+        # Auto-add to ride history so drivers can revisit who they helped
+        CompletedRide.objects.create(
+            ride_request=ride_request,
+            driver=offer.driver,
+            rider=request.user,
+            final_price=offer.price,
+            distance_miles=ride_request.distance_miles,
+            pickup_time=timezone.now(),
+        )
+
         return Response(ride_data)
 
 
@@ -220,12 +230,8 @@ class CompleteRideView(APIView):
         ride_request.status = "completed"
         ride_request.save(update_fields=["status"])
 
-        CompletedRide.objects.create(
-            ride_request=ride_request,
-            driver=request.user,
-            rider=ride_request.rider,
-            final_price=ride_request.accepted_offer.price,
-            distance_miles=ride_request.distance_miles,
+        # Update the existing history entry (created at acceptance) with completion details
+        CompletedRide.objects.filter(ride_request=ride_request).update(
             dropoff_time=timezone.now(),
         )
 

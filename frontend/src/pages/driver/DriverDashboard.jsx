@@ -8,8 +8,9 @@ import LoadingSpinner from "../../components/common/LoadingSpinner";
 import { useAuth } from "../../context/AuthContext";
 import { getActiveRide, getRideHistory } from "../../api/ridesApi";
 import { getDriverProfile, updateDriverProfile } from "../../api/authApi";
-import { formatPrice, formatDistance } from "../../utils/formatters";
+import { formatPrice, formatDistance, getGreeting } from "../../utils/formatters";
 import { fadeInUp, staggerContainer } from "../../styles/animations";
+import { DriverIllustration } from "../../components/common/Illustrations";
 
 export default function DriverDashboard() {
   const { user } = useAuth();
@@ -48,11 +49,17 @@ export default function DriverDashboard() {
       <Navbar />
       <AnimatedPage className="max-w-5xl mx-auto px-4 py-8">
         <motion.div variants={fadeInUp} initial="initial" animate="animate" className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-white">
-              Hey, {user?.full_name?.split(" ")[0]}! {"\uD83D\uDE80"}
-            </h1>
-            <p className="text-slate-400 mt-1">Manage your rides and earnings</p>
+          <div className="flex items-center gap-6">
+            <div className="hidden md:block w-32">
+              <DriverIllustration />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-primary-400 mb-1">{getGreeting()}</p>
+              <h1 className="text-3xl font-bold text-white">
+                Hey, {user?.full_name?.split(" ")[0]}! {"\uD83D\uDE80"}
+              </h1>
+              <p className="text-slate-400 mt-1">Manage your rides and earnings</p>
+            </div>
           </div>
           <motion.button
             whileHover={{ scale: 1.05 }}
@@ -118,7 +125,7 @@ export default function DriverDashboard() {
             <motion.div whileHover={{ scale: 1.03, y: -3 }} className="p-6 bg-accent-500/10 border border-accent-500/20 rounded-2xl cursor-pointer">
               <span className="text-3xl block mb-3">{"\uD83D\uDCCB"}</span>
               <h3 className="font-semibold text-white">Ride History</h3>
-              <p className="text-sm text-slate-400 mt-1">View your completed rides</p>
+              <p className="text-sm text-slate-400 mt-1">See who you helped</p>
             </motion.div>
           </Link>
         </div>

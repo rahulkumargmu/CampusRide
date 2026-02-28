@@ -7,8 +7,9 @@ import StatusBadge from "../../components/common/StatusBadge";
 import LoadingSpinner from "../../components/common/LoadingSpinner";
 import { useAuth } from "../../context/AuthContext";
 import { getActiveRide, listRideRequests } from "../../api/ridesApi";
-import { formatPrice, formatDistance, formatTimeAgo } from "../../utils/formatters";
+import { formatPrice, formatDistance, formatTimeAgo, getGreeting } from "../../utils/formatters";
 import { fadeInUp, staggerContainer } from "../../styles/animations";
+import { RideSharingIllustration } from "../../components/common/Illustrations";
 
 export default function RiderDashboard() {
   const { user } = useAuth();
@@ -29,12 +30,18 @@ export default function RiderDashboard() {
     <>
       <Navbar />
       <AnimatedPage className="max-w-5xl mx-auto px-4 py-8">
-        {/* Welcome */}
-        <motion.div variants={fadeInUp} initial="initial" animate="animate" className="mb-8">
-          <h1 className="text-3xl font-bold text-white">
-            Hello, {user?.full_name?.split(" ")[0]}! {"\uD83D\uDC4B"}
-          </h1>
-          <p className="text-slate-400 mt-1">Ready to find a ride?</p>
+        {/* Welcome with illustration */}
+        <motion.div variants={fadeInUp} initial="initial" animate="animate" className="mb-8 flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-primary-400 mb-1">{getGreeting()}</p>
+            <h1 className="text-3xl font-bold text-white">
+              Hello, {user?.full_name?.split(" ")[0]}! {"\uD83D\uDC4B"}
+            </h1>
+            <p className="text-slate-400 mt-1">Ready to find a ride?</p>
+          </div>
+          <div className="hidden md:block w-64">
+            <RideSharingIllustration />
+          </div>
         </motion.div>
 
         {/* Active Ride */}
