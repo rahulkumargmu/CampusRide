@@ -68,10 +68,13 @@ export default function Navbar() {
           <div className="flex items-center gap-4">
             {user && (
               <>
-                <div className="text-right hidden sm:block">
+                <Link
+                  to="/settings"
+                  className="text-right hidden sm:block hover:opacity-75 transition-opacity"
+                >
                   <p className="text-sm font-medium text-slate-200">{user.full_name}</p>
                   <p className="text-xs text-slate-400 capitalize">{user.role}</p>
-                </div>
+                </Link>
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}

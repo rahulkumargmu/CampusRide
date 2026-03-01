@@ -16,6 +16,7 @@ import DriverHistoryPage from "./pages/driver/DriverHistoryPage";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import ManageUsersPage from "./pages/admin/ManageUsersPage";
 import MonitorRidesPage from "./pages/admin/MonitorRidesPage";
+import SettingsPage from "./pages/SettingsPage";
 
 // Components
 import ProtectedRoute from "./components/common/ProtectedRoute";
@@ -53,6 +54,11 @@ function AppRoutes() {
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin/users" element={<ManageUsersPage />} />
           <Route path="/admin/rides" element={<MonitorRidesPage />} />
+        </Route>
+
+        {/* Settings - all authenticated users */}
+        <Route element={<ProtectedRoute />}>
+          <Route path="/settings" element={<SettingsPage />} />
         </Route>
 
         {/* Fallback */}

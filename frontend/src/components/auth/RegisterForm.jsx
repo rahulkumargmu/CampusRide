@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../../context/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
 
@@ -13,6 +13,11 @@ export default function RegisterForm() {
     role: "rider",
     password: "",
     password_confirm: "",
+    vehicle_make: "",
+    vehicle_model: "",
+    vehicle_year: "",
+    vehicle_color: "",
+    license_plate: "",
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -28,7 +33,11 @@ export default function RegisterForm() {
 
     setLoading(true);
     try {
-      const user = await register(form);
+      const payload = { ...form };
+      if (payload.vehicle_year === "") payload.vehicle_year = null;
+      else if (payload.vehicle_year) payload.vehicle_year = parseInt(payload.vehicle_year, 10);
+
+      const user = await register(payload);
       navigate(`/${user.role}`);
     } catch (err) {
       const data = err.response?.data;
@@ -44,6 +53,8 @@ export default function RegisterForm() {
   };
 
   const update = (field, value) => setForm({ ...form, [field]: value });
+
+  const inputClass = "w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500/50 transition-all";
 
   return (
     <motion.form
@@ -67,8 +78,8 @@ export default function RegisterForm() {
         <label className="block text-sm font-medium text-slate-300 mb-2">I am a</label>
         <div className="grid grid-cols-2 gap-3">
           {[
-            { value: "rider", label: "Rider", desc: "I need rides", icon: "\uD83D\uDE97" },
-            { value: "driver", label: "Driver", desc: "I give rides", icon: "\uD83D\uDE98" },
+            { value: "rider", label: "Rider", desc: "I need rides", icon: "🚗" },
+            { value: "driver", label: "Driver", desc: "I give rides", icon: "🚘" },
           ].map((role) => (
             <motion.button
               key={role.value}
@@ -97,7 +108,7 @@ export default function RegisterForm() {
           required
           value={form.full_name}
           onChange={(e) => update("full_name", e.target.value)}
-          className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500/50 transition-all"
+          className={inputClass}
           placeholder="John Doe"
         />
       </div>
@@ -109,7 +120,7 @@ export default function RegisterForm() {
           required
           value={form.email}
           onChange={(e) => update("email", e.target.value)}
-          className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500/50 transition-all"
+          className={inputClass}
           placeholder="john@university.edu"
         />
       </div>
@@ -121,7 +132,7 @@ export default function RegisterForm() {
           required
           value={form.phone_number}
           onChange={(e) => update("phone_number", e.target.value)}
-          className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500/50 transition-all"
+          className={inputClass}
           placeholder="(555) 123-4567"
         />
       </div>
@@ -135,7 +146,7 @@ export default function RegisterForm() {
             minLength={8}
             value={form.password}
             onChange={(e) => update("password", e.target.value)}
-            className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500/50 transition-all"
+            className={inputClass}
             placeholder="Min 8 chars"
           />
         </div>
@@ -147,11 +158,89 @@ export default function RegisterForm() {
             minLength={8}
             value={form.password_confirm}
             onChange={(e) => update("password_confirm", e.target.value)}
-            className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500/50 transition-all"
+            className={inputClass}
             placeholder="Re-enter"
           />
         </div>
       </div>
+
+      {/* Vehicle Details - drivers only */}
+      <AnimatePresence>
+        {form.role === "driver" && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden"
+          >
+            <div className="pt-2 space-y-3">
+              <p className="text-sm font-medium text-slate-300 flex items-center gap-2">
+                <span>🚘</span> Vehicle Details
+              </p>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs text-slate-400 mb-1">Make</label>
+                  <input
+                    type="text"
+                    value={form.vehicle_make}
+                    onChange={(e) => update("vehicle_make", e.target.value)}
+                    className={inputClass}
+                    placeholder="Toyota"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-slate-400 mb-1">Model</label>
+                  <input
+                    type="text"
+                    value={form.vehicle_model}
+                    onChange={(e) => update("vehicle_model", e.target.value)}
+                    className={inputClass}
+                    placeholder="Camry"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs text-slate-400 mb-1">Year</label>
+                  <input
+                    type="number"
+                    value={form.vehicle_year}
+                    onChange={(e) => update("vehicle_year", e.target.value)}
+                    className={inputClass}
+                    placeholder="2022"
+                    min="1990"
+                    max="2030"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-slate-400 mb-1">Color</label>
+                  <input
+                    type="text"
+                    value={form.vehicle_color}
+                    onChange={(e) => update("vehicle_color", e.target.value)}
+                    className={inputClass}
+                    placeholder="Silver"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs text-slate-400 mb-1">License Plate</label>
+                <input
+                  type="text"
+                  value={form.license_plate}
+                  onChange={(e) => update("license_plate", e.target.value.toUpperCase())}
+                  className={inputClass}
+                  placeholder="ABC 1234"
+                />
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <motion.button
         whileHover={{ scale: 1.01 }}

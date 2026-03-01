@@ -46,6 +46,9 @@ export default function RiderHistoryPage() {
                     <p className="text-sm text-slate-400 mt-1">
                       Driver: {ride.driver?.full_name} | {formatDistance(ride.distance_miles)} | {formatDateTime(ride.created_at)}
                     </p>
+                    {ride.driver_vehicle && (
+                      <p className="text-xs text-slate-500 mt-0.5">{ride.driver_vehicle}</p>
+                    )}
                   </div>
                   <div className="text-right">
                     <p className="text-xl font-bold text-green-400">{formatPrice(ride.final_price)}</p>

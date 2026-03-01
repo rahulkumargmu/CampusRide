@@ -7,7 +7,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenRefreshView as BaseTokenRefreshView
 
 from .models import User, DriverProfile
-from .serializers import RegisterSerializer, UserSerializer, DriverProfileSerializer
+from .serializers import RegisterSerializer, UserSerializer, UpdateProfileSerializer, DriverProfileSerializer
 from .permissions import IsAdmin
 
 
@@ -90,7 +90,10 @@ class LogoutView(APIView):
 
 
 class ProfileView(RetrieveUpdateAPIView):
-    serializer_class = UserSerializer
+    def get_serializer_class(self):
+        if self.request.method in ("PUT", "PATCH"):
+            return UpdateProfileSerializer
+        return UserSerializer
 
     def get_object(self):
         return self.request.user

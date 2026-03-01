@@ -63,6 +63,7 @@ class CompletedRideSerializer(serializers.ModelSerializer):
     rider = UserSerializer(read_only=True)
     ride_request = RideRequestBriefSerializer(read_only=True)
     is_completed = serializers.SerializerMethodField()
+    driver_vehicle = serializers.SerializerMethodField()
 
     class Meta:
         model = CompletedRide
@@ -70,3 +71,10 @@ class CompletedRideSerializer(serializers.ModelSerializer):
 
     def get_is_completed(self, obj):
         return obj.dropoff_time is not None
+
+    def get_driver_vehicle(self, obj):
+        profile = getattr(obj.driver, "driver_profile", None)
+        if profile:
+            parts = [profile.vehicle_color, str(profile.vehicle_year or ""), profile.vehicle_make, profile.vehicle_model]
+            return " ".join(p for p in parts if p).strip()
+        return ""

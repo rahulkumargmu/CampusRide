@@ -47,6 +47,14 @@ export function AuthProvider({ children }) {
     return data.user;
   }, []);
 
+  const refreshProfile = useCallback(async () => {
+    try {
+      const { data } = await getProfile();
+      setUser(data);
+      localStorage.setItem("user", JSON.stringify(data));
+    } catch {}
+  }, []);
+
   const logout = useCallback(async () => {
     const refresh = localStorage.getItem("refresh_token");
     try {
@@ -61,7 +69,7 @@ export function AuthProvider({ children }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, loading, isAuthenticated: !!user }}>
+    <AuthContext.Provider value={{ user, login, register, logout, refreshProfile, loading, isAuthenticated: !!user }}>
       {children}
     </AuthContext.Provider>
   );
