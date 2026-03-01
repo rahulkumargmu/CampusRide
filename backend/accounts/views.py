@@ -6,9 +6,9 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenRefreshView as BaseTokenRefreshView
 
-from .models import User, DriverProfile
+from .models import User, DriverProfile, FavouriteDriver
 from .serializers import RegisterSerializer, UserSerializer, UpdateProfileSerializer, DriverProfileSerializer
-from .permissions import IsAdmin
+from .permissions import IsAdmin, IsRider
 
 
 class RegisterView(CreateAPIView):
@@ -166,3 +166,26 @@ class AdminStatsView(APIView):
                 "completed_rides": RideRequest.objects.filter(status="completed").count(),
             }
         )
+
+
+class FavouriteDriverView(APIView):
+    permission_classes = [IsRider]
+
+    def get(self, request):
+        ids = FavouriteDriver.objects.filter(rider=request.user).values_list("driver_id", flat=True)
+        return Response([str(i) for i in ids])
+
+    def post(self, request):
+        driver_id = request.data.get("driver_id")
+        if not driver_id:
+            return Response({"error": "driver_id required"}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            fav, created = FavouriteDriver.objects.get_or_create(
+                rider=request.user, driver_id=driver_id
+            )
+        except Exception:
+            return Response({"error": "Invalid driver_id"}, status=status.HTTP_400_BAD_REQUEST)
+        if not created:
+            fav.delete()
+            return Response({"favourited": False})
+        return Response({"favourited": True})

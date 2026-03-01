@@ -64,6 +64,7 @@ class CompletedRideSerializer(serializers.ModelSerializer):
     ride_request = RideRequestBriefSerializer(read_only=True)
     is_completed = serializers.SerializerMethodField()
     driver_vehicle = serializers.SerializerMethodField()
+    driver_profile_rating = serializers.SerializerMethodField()
 
     class Meta:
         model = CompletedRide
@@ -78,3 +79,7 @@ class CompletedRideSerializer(serializers.ModelSerializer):
             parts = [profile.vehicle_color, str(profile.vehicle_year or ""), profile.vehicle_make, profile.vehicle_model]
             return " ".join(p for p in parts if p).strip()
         return ""
+
+    def get_driver_profile_rating(self, obj):
+        profile = getattr(obj.driver, "driver_profile", None)
+        return float(profile.rating) if profile else 5.0

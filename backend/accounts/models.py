@@ -52,6 +52,19 @@ class DriverProfile(models.Model):
         return f"Driver: {self.user.full_name}"
 
 
+class FavouriteDriver(models.Model):
+    rider = models.ForeignKey(User, on_delete=models.CASCADE, related_name="favourite_drivers")
+    driver = models.ForeignKey(User, on_delete=models.CASCADE, related_name="favourited_by")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "favourite_drivers"
+        unique_together = ["rider", "driver"]
+
+    def __str__(self):
+        return f"{self.rider.full_name} → {self.driver.full_name}"
+
+
 class RiderProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="rider_profile")
     rating = models.DecimalField(max_digits=3, decimal_places=2, default=5.00)

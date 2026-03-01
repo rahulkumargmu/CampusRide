@@ -285,6 +285,63 @@ class ActiveRideView(APIView):
         return Response(None)
 
 
+class RateRideView(APIView):
+    permission_classes = [IsRider]
+
+    def post(self, request):
+        ride_id = request.data.get("ride_id")
+        rating = request.data.get("rating")
+        review_text = request.data.get("review_text", "").strip()
+
+        if not ride_id or not rating:
+            return Response({"error": "ride_id and rating required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            rating = int(rating)
+            if not (1 <= rating <= 5):
+                raise ValueError
+        except (ValueError, TypeError):
+            return Response({"error": "Rating must be 1–5"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            completed_ride = CompletedRide.objects.select_related("driver__driver_profile").get(
+                id=ride_id, rider=request.user
+            )
+        except CompletedRide.DoesNotExist:
+            return Response({"error": "Ride not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        if completed_ride.driver_rating is not None:
+            return Response({"error": "Already rated"}, status=status.HTTP_400_BAD_REQUEST)
+
+        completed_ride.driver_rating = rating
+        completed_ride.review_text = review_text
+        completed_ride.save(update_fields=["driver_rating", "review_text"])
+
+        # Recalculate driver's average rating
+        driver_profile = completed_ride.driver.driver_profile
+        all_ratings = list(
+            CompletedRide.objects.filter(
+                driver=completed_ride.driver, driver_rating__isnull=False
+            ).values_list("driver_rating", flat=True)
+        )
+        driver_profile.rating = round(sum(all_ratings) / len(all_ratings), 2) if all_ratings else 5.0
+        driver_profile.save(update_fields=["rating"])
+
+        return Response(CompletedRideSerializer(completed_ride).data)
+
+
+class PendingRatingsView(ListAPIView):
+    permission_classes = [IsRider]
+    serializer_class = CompletedRideSerializer
+
+    def get_queryset(self):
+        return CompletedRide.objects.filter(
+            rider=self.request.user,
+            driver_rating__isnull=True,
+            dropoff_time__isnull=False,
+        ).select_related("driver__driver_profile", "ride_request")
+
+
 class AdminRidesView(ListAPIView):
     permission_classes = [IsAdmin]
     serializer_class = RideRequestSerializer

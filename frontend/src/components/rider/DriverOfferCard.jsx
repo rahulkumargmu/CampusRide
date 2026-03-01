@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { formatPrice } from "../../utils/formatters";
 import { listItem } from "../../styles/animations";
+import StarRating from "../common/StarRating";
 
 export default function DriverOfferCard({ offer, onAccept, isAccepting }) {
   return (
@@ -20,10 +21,7 @@ export default function DriverOfferCard({ offer, onAccept, isAccepting }) {
             </div>
             <div>
               <h4 className="font-semibold text-white">{offer.driver?.full_name}</h4>
-              <div className="flex items-center gap-2 text-sm">
-                <span className="text-yellow-400">{"★".repeat(Math.round(offer.driver_rating || 5))}</span>
-                <span className="text-slate-400">{Number(offer.driver_rating || 5).toFixed(1)}</span>
-              </div>
+              <StarRating rating={offer.driver_rating || 5} size="sm" />
             </div>
           </div>
 

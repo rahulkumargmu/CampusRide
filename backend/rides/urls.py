@@ -12,4 +12,6 @@ urlpatterns = [
     path("complete/<uuid:pk>/", views.CompleteRideView.as_view(), name="complete_ride"),
     path("history/", views.RideHistoryView.as_view(), name="ride_history"),
     path("active/", views.ActiveRideView.as_view(), name="active_ride"),
+    path("rate/", views.RateRideView.as_view(), name="rate_ride"),
+    path("pending-ratings/", views.PendingRatingsView.as_view(), name="pending_ratings"),
 ]

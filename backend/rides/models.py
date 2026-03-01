@@ -101,6 +101,7 @@ class CompletedRide(models.Model):
 
     driver_rating = models.PositiveSmallIntegerField(null=True, blank=True)
     rider_rating = models.PositiveSmallIntegerField(null=True, blank=True)
+    review_text = models.CharField(max_length=300, blank=True, default="")
 
     created_at = models.DateTimeField(auto_now_add=True)
 

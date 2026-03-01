@@ -8,3 +8,5 @@ export const getProfile = () => api.get("/auth/profile/");
 export const updateProfile = (data) => api.patch("/auth/profile/", data);
 export const getDriverProfile = () => api.get("/auth/driver-profile/");
 export const updateDriverProfile = (data) => api.patch("/auth/driver-profile/", data);
+export const getFavourites = () => api.get("/auth/favourites/");
+export const toggleFavourite = (driver_id) => api.post("/auth/favourites/", { driver_id });

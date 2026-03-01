@@ -10,3 +10,5 @@ export const acceptOffer = (offerId) => api.post("/rides/accept-offer/", { offer
 export const completeRide = (id) => api.post(`/rides/complete/${id}/`);
 export const getRideHistory = () => api.get("/rides/history/");
 export const getActiveRide = () => api.get("/rides/active/");
+export const rateRide = (data) => api.post("/rides/rate/", data);
+export const getPendingRatings = () => api.get("/rides/pending-ratings/");

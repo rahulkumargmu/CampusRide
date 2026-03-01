@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import Navbar from "../../components/common/Navbar";
 import AnimatedPage from "../../components/common/AnimatedPage";
 import StatusBadge from "../../components/common/StatusBadge";
 import LoadingSpinner from "../../components/common/LoadingSpinner";
+import RatingModal from "../../components/rider/RatingModal";
 import { useAuth } from "../../context/AuthContext";
-import { getActiveRide, listRideRequests } from "../../api/ridesApi";
+import { getActiveRide, listRideRequests, getPendingRatings, rateRide } from "../../api/ridesApi";
 import { formatPrice, formatDistance, formatTimeAgo, getGreeting } from "../../utils/formatters";
 import { fadeInUp, staggerContainer } from "../../styles/animations";
 import { RideSharingIllustration } from "../../components/common/Illustrations";
@@ -16,26 +17,60 @@ export default function RiderDashboard() {
   const [activeRide, setActiveRide] = useState(null);
   const [recentRides, setRecentRides] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [pendingRatings, setPendingRatings] = useState([]);
+  const [ratingDone, setRatingDone] = useState(false);
 
   useEffect(() => {
     Promise.all([
       getActiveRide().then((r) => setActiveRide(r.data)),
       listRideRequests().then((r) => setRecentRides(r.data.slice(0, 5))),
+      getPendingRatings().then((r) => setPendingRatings(r.data)).catch(() => {}),
     ]).finally(() => setLoading(false));
   }, []);
+
+  const currentRide = pendingRatings[0] || null;
+
+  const handleRatingSubmit = async (payload) => {
+    await rateRide(payload);
+    setPendingRatings((prev) => prev.slice(1));
+  };
+
+  const handleRatingSkip = () => {
+    setPendingRatings((prev) => {
+      // Move skipped to end so other pending ones can be rated
+      const [head, ...rest] = prev;
+      return rest;
+    });
+    setRatingDone(pendingRatings.length <= 1);
+  };
 
   if (loading) return <><Navbar /><LoadingSpinner text="Loading dashboard..." /></>;
 
   return (
     <>
       <Navbar />
+
+      {/* Rating Modal — shown on login if there are unrated completed rides */}
+      <AnimatePresence>
+        {currentRide && (
+          <RatingModal
+            key={currentRide.id}
+            ride={currentRide}
+            onSubmit={handleRatingSubmit}
+            onSkip={handleRatingSkip}
+            total={pendingRatings.length + (ratingDone ? 0 : 0)}
+            current={1}
+          />
+        )}
+      </AnimatePresence>
+
       <AnimatedPage className="max-w-5xl mx-auto px-4 py-8">
         {/* Welcome with illustration */}
         <motion.div variants={fadeInUp} initial="initial" animate="animate" className="mb-8 flex items-center justify-between">
           <div>
             <p className="text-sm font-medium text-primary-400 mb-1">{getGreeting()}</p>
             <h1 className="text-3xl font-bold text-white">
-              Hello, {user?.full_name?.split(" ")[0]}! {"\uD83D\uDC4B"}
+              Hello, {user?.full_name?.split(" ")[0]}! 👋
             </h1>
             <p className="text-slate-400 mt-1">Ready to find a ride?</p>
           </div>
@@ -57,11 +92,11 @@ export default function RiderDashboard() {
             </div>
             <div className="flex items-center gap-4 text-sm">
               <span className="text-slate-400">
-                {"\uD83D\uDCCD"} {activeRide.pickup_city}, {activeRide.pickup_state}
+                📍 {activeRide.pickup_city}, {activeRide.pickup_state}
               </span>
-              <span className="text-primary-400">{"\u2192"}</span>
+              <span className="text-primary-400">→</span>
               <span className="text-slate-400">
-                {"\uD83C\uDFC1"} {activeRide.dropoff_city}, {activeRide.dropoff_state}
+                🏁 {activeRide.dropoff_city}, {activeRide.dropoff_state}
               </span>
             </div>
             {activeRide.status === "pending" || activeRide.status === "offered" ? (
@@ -80,9 +115,9 @@ export default function RiderDashboard() {
         {/* Quick Actions */}
         <motion.div variants={staggerContainer} initial="initial" animate="animate" className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           {[
-            { to: "/rider/request", icon: "\uD83D\uDE97", title: "Request a Ride", desc: "Find drivers near you", gradient: "from-primary-500/20 to-blue-500/20", border: "border-primary-500/20" },
-            { to: "/rider/history", icon: "\uD83D\uDCCB", title: "Ride History", desc: "View past rides", gradient: "from-accent-500/20 to-purple-500/20", border: "border-accent-500/20" },
-            { to: "/rider/request", icon: "\uD83D\uDCB0", title: "Save Money", desc: "$0.50/mile avg", gradient: "from-green-500/20 to-emerald-500/20", border: "border-green-500/20" },
+            { to: "/rider/request", icon: "🚗", title: "Request a Ride", desc: "Find drivers near you", gradient: "from-primary-500/20 to-blue-500/20", border: "border-primary-500/20" },
+            { to: "/rider/history", icon: "📋", title: "Ride History", desc: "View past rides", gradient: "from-accent-500/20 to-purple-500/20", border: "border-accent-500/20" },
+            { to: "/rider/request", icon: "💰", title: "Save Money", desc: "$0.50/mile avg", gradient: "from-green-500/20 to-emerald-500/20", border: "border-green-500/20" },
           ].map((action) => (
             <Link key={action.to + action.title} to={action.to}>
               <motion.div
@@ -108,7 +143,7 @@ export default function RiderDashboard() {
                   <div className="flex items-center gap-4">
                     <div>
                       <p className="text-sm text-white font-medium">
-                        {ride.pickup_city} {"\u2192"} {ride.dropoff_city}
+                        {ride.pickup_city} → {ride.dropoff_city}
                       </p>
                       <p className="text-xs text-slate-500">{formatTimeAgo(ride.created_at)} | {formatDistance(ride.distance_miles)}</p>
                     </div>
